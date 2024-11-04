@@ -10,9 +10,9 @@ redisClient.on('error', (err) => console.error('Redis error:', err));
 (async () => {
   await redisClient.connect();
 })();
-// Función para setear una clave con TTL
+
 export const setCache = async (key: string, value: any, ttl: number) => {
-  await redisClient.set(key, JSON.stringify(value), { EX: ttl }); // EX establece el TTL en segundos
+  await redisClient.set(key, JSON.stringify(value), { EX: ttl });
 };
 
 export const getCache = async (key: string) => {
