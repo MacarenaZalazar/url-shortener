@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { setCache, getCache } from '../services/redis';
 import Url from '../models/url';
-import { nanoid } from 'nanoid';
+import ShortUniqueId from 'short-unique-id';
 
 const CACHE_TTL = 3600; // 1 hora en segundos
 
@@ -11,7 +11,9 @@ export const generateShortUrl = async (
   res: Response
 ): Promise<void> => {
   const { originalUrl } = req.body;
-  const id = nanoid(10);
+
+  const uid = new ShortUniqueId({ length: 6 }); // Define la longitud del ID
+  const id = uid.randomUUID();
   const shortUrl = `http://localhost:3000/${id}`;
 
   // Guarda en MongoDB

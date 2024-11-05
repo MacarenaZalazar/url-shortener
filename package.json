@@ -17,8 +17,8 @@
     "express": "^4.21.1",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.0",
-    "nanoid": "^5.0.8",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "short-unique-id": "^5.2.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
