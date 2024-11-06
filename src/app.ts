@@ -8,6 +8,6 @@ const app = express();
 
 app.use(express.json());
 
-app.use('/api', urlRoutes);
+app.use('/url-shortener/api', urlRoutes);
 
 export default app;

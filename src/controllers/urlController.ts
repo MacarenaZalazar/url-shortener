@@ -33,11 +33,9 @@ export const generateShortUrl = async (
 
     res.json({ shortUrl, id });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: 'Hubo un problema generando la URL corta. Inténtalo de nuevo.',
-      });
+    res.status(500).json({
+      error: 'Hubo un problema generando la URL corta. Inténtalo de nuevo.',
+    });
   }
 };
 
@@ -50,39 +48,46 @@ export const redirectUrl = async (
   try {
     // Intenta obtener la URL desde el caché de Redis
     let data = await getCache(id);
-    if (!data) {
-      // Si no está en caché, busca en MongoDB
-      const url = await Url.findOne({
-        shortUrl: `${BASE_URL}/${id}`,
-        enabled: true,
-      });
-      if (!url) {
-        res.status(404).json({ error: 'URL no encontrada o deshabilitada' });
-        return;
-      }
 
-      // Configura en el caché de Redis y actualiza el objeto `data`
-      data = {
-        originalUrl: url.originalUrl,
-        shortUrl: url.shortUrl,
-        enabled: url.enabled,
-        hits: url.hits,
-      };
-      await setCache(id, data, CACHE_TTL);
+    if (data) {
+      // Incrementa los hits en MongoDB de manera asíncrona
+      Url.updateOne(
+        { shortUrl: id },
+        { $inc: { hits: 1 }, $set: { lastAccessed: new Date() } }
+      ).exec();
+      console.log("OK")
+
+      return res.redirect(data.originalUrl);
     }
+
+    // Si no está en caché, busca en MongoDB
+    const url = await Url.findOne({
+      shortUrl: `${BASE_URL}/${id}`,
+      enabled: true,
+    });
+
+    if (!url) {
+      console.log({ error: 'URL no encontrada o deshabilitada' })
+      res.status(404).json({ error: 'URL no encontrada o deshabilitada' });
+      return;
+    }
+
+    // Configura en el caché de Redis y actualiza el objeto `data`
+    data = {
+      originalUrl: url.originalUrl,
+      shortUrl: url.shortUrl,
+      enabled: url.enabled,
+      hits: url.hits,
+    };
+    await setCache(id, data, CACHE_TTL);
 
     // Incrementa el contador de hits en Redis
     data.hits += 1;
     await setCache(id, data, CACHE_TTL);
-
-    // Incrementa los hits en MongoDB de manera asíncrona
-    Url.updateOne(
-      { shortUrl: data.shortUrl },
-      { $inc: { hits: 1 }, $set: { lastAccessed: new Date() } }
-    ).exec();
-
+console.log("OK")
     res.redirect(data.originalUrl);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: 'Hubo un problema redirigiendo la URL.' });
   }
 };
@@ -117,12 +122,9 @@ export const updateUrlStatus = async (
       message: `URL ${enabled ? 'habilitada' : 'deshabilitada'} correctamente.`,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
-      });
+    res.status(500).json({
+      error: 'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
+    });
   }
 };
 
@@ -154,12 +156,9 @@ export const updateOriginalUrl = async (
 
     res.json({ message: 'URL actualizada correctamente.' });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
-      });
+    res.status(500).json({
+      error: 'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
+    });
   }
 };
 
@@ -198,11 +197,8 @@ export const getUrlStats = async (
       hits: data.hits,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error:
-          'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
-      });
+    res.status(500).json({
+      error: 'Ocurrió un problema inesperado. Por favor, inténtalo más tarde.',
+    });
   }
 };
