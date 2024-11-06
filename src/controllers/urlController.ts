@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { setCache, getCache } from '../services/redis';
 import Url from '../models/url';
 import ShortUniqueId from 'short-unique-id';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const CACHE_TTL = 3600; // 1 hora en segundos
 
@@ -12,9 +15,9 @@ export const generateShortUrl = async (
 ): Promise<void> => {
   const { originalUrl } = req.body;
 
-  const uid = new ShortUniqueId({ length: 6 }); // Define la longitud del ID
+  const uid = new ShortUniqueId({ length: 8 }); // Define la longitud del ID
   const id = uid.randomUUID();
-  const shortUrl = `http://localhost:3000/${id}`;
+  const shortUrl = `${process.env.BASE_URL}/${id}`;
 
   // Guarda en MongoDB
   try {
